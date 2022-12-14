@@ -7,14 +7,22 @@
 
 import UIKit
 
+protocol OnboardingContainerViewControllerDelegate: AnyObject {
+    func didFinishOnboarding()
+}
+
 class OnboardingContainerViewController: UIViewController {
 
+    // MARK: - Views
     let pageViewController: UIPageViewController
+    let closeButton = UIButton(type: .system)
+
+    // MARK: - Properties
     var pages = [UIViewController]()
-    var currentVC: UIViewController {
-        didSet {
-        }
-    }
+    var currentVC: UIViewController
+
+    // MARK: - Delegates
+    weak var delegate: OnboardingContainerViewControllerDelegate?
 
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         self.pageViewController = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
@@ -54,6 +62,12 @@ class OnboardingContainerViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        setup()
+        style()
+        layout()
+    }
+
+    private func setup() {
         view.backgroundColor = .systemPurple
 
         addChild(pageViewController)
@@ -72,6 +86,23 @@ class OnboardingContainerViewController: UIViewController {
 
         pageViewController.setViewControllers([pages.first!], direction: .forward, animated: false, completion: nil)
         currentVC = pages.first!
+    }
+
+    private func style() {
+        closeButton.translatesAutoresizingMaskIntoConstraints = false
+        closeButton.setTitle("Close", for: .normal)
+        closeButton.addAction(UIAction { [weak self] _ in
+            self?.delegate?.didFinishOnboarding()
+        }, for: .touchUpInside)
+    }
+
+    private func layout() {
+        view.addSubview(closeButton)
+
+        NSLayoutConstraint.activate([
+            closeButton.topAnchor.constraint(equalToSystemSpacingBelow: view.safeAreaLayoutGuide.topAnchor, multiplier: 2),
+            closeButton.leadingAnchor.constraint(equalToSystemSpacingAfter: view.safeAreaLayoutGuide.leadingAnchor, multiplier: 2)
+        ])
     }
 }
 
